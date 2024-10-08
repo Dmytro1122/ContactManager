@@ -1,21 +1,55 @@
 ﻿@model IEnumerable<ContactManager.Models.Contact>
 
-<h2>Контактний менеджер</h2>
+<h2>Contact Manager</h2>
 
 <form asp-action="UploadCsv" enctype="multipart/form-data" method="post">
     <input type="file" name="file" />
     <input type="submit" value="Upload CSV" />
 </form>
 
-<table class="table">
+<a asp-action="Add" class="btn btn-primary" style="margin-top: 20px;">Add Contact</a>
+
+<div style="margin-top: 10px;">
+    <input type="text" id="nameFilter" placeholder="Filter by name" onkeyup="filterTable()" class="form-control" style="display: inline-block; width: 150px;">
+    <input type="text" id="birthDateFilter" placeholder="Filter by birth date" onkeyup="filterTable()" class="form-control" style="display: inline-block; width: 150px;">
+    <select id="marriedFilter" onchange="filterTable()" class="form-control" style="display: inline-block; width: 150px;">
+        <option value="">Filter by Married</option>
+        <option value="true">True</option>
+        <option value="false">False</option>
+    </select>
+    <input type="text" id="phoneFilter" placeholder="Filter by phone" onkeyup="filterTable()" class="form-control" style="display: inline-block; width: 150px;">
+    <input type="number" id="salaryFilter" placeholder="Filter by salary" onkeyup="filterTable()" class="form-control" style="display: inline-block; width: 150px;">
+</div>
+
+<table class="table" id="contactsTable" style="margin-top: 10px;">
     <thead>
         <tr>
-            <th>Ім'я</th>
-            <th>Дата народження</th>
-            <th>Одружений</th>
-            <th>Телефон</th>
-            <th>Зарплата</th>
-            <th>Дії</th>
+            <th>
+                Name
+                <span id="nameIconUp" onclick="sortTable(0, 'asc')" style="cursor: pointer;">&#9650;</span>
+                <span id="nameIconDown" onclick="sortTable(0, 'desc')" style="cursor: pointer;">&#9660;</span>
+            </th>
+            <th>
+                BirthDate
+                <span id="birthDateIconUp" onclick="sortTable(1, 'asc')" style="cursor: pointer;">&#9650;</span>
+                <span id="birthDateIconDown" onclick="sortTable(1, 'desc')" style="cursor: pointer;">&#9660;</span>
+            </th>
+            <th>
+                Married
+                <span id="marriedIconUp" onclick="sortTable(2, 'asc')" style="cursor: pointer;">&#9650;</span>
+                <span id="marriedIconDown" onclick="sortTable(2, 'desc')" style="cursor: pointer;">&#9660;</span>
+            </th>
+            <th>
+                Phone
+                <span id="phoneIconUp" onclick="sortTable(3, 'asc')" style="cursor: pointer;">&#9650;</span>
+                <span id="phoneIconDown" onclick="sortTable(3, 'desc')" style="cursor: pointer;">&#9660;</span>
+            </th>
+            <th>
+                Salary
+                <span id="salaryIconUp" onclick="sortTable(4, 'asc')" style="cursor: pointer;">&#9650;</span>
+                <span id="salaryIconDown" onclick="sortTable(4, 'desc')" style="cursor: pointer;">&#9660;</span>
+            </th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -35,3 +69,126 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        function filterTable() {
+            var nameFilter = document.getElementById("nameFilter").value.toUpperCase();
+            var birthDateFilter = document.getElementById("birthDateFilter").value.toUpperCase();
+            var marriedFilter = document.getElementById("marriedFilter").value;
+            var phoneFilter = document.getElementById("phoneFilter").value.toUpperCase();
+            var salaryFilter = document.getElementById("salaryFilter").value;
+            var table = document.getElementById("contactsTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) {
+                var tdName = tr[i].getElementsByTagName("td")[0];
+                var tdBirthDate = tr[i].getElementsByTagName("td")[1];
+                var tdMarried = tr[i].getElementsByTagName("td")[2];
+                var tdPhone = tr[i].getElementsByTagName("td")[3];
+                var tdSalary = tr[i].getElementsByTagName("td")[4];
+
+                if (tdName && tdBirthDate && tdMarried && tdPhone && tdSalary) {
+                    var nameText = tdName.textContent || tdName.innerText;
+                    var birthDateText = tdBirthDate.textContent || tdBirthDate.innerText;
+                    var marriedText = tdMarried.textContent || tdMarried.innerText;
+                    var phoneText = tdPhone.textContent || tdPhone.innerText;
+                    var salaryText = tdSalary.textContent || tdSalary.innerText;
+
+                    var display = true;
+
+                    if (nameFilter !== "" && nameText.toUpperCase().indexOf(nameFilter) === -1) {
+                        display = false;
+                    }
+
+                    if (birthDateFilter !== "" && birthDateText.toUpperCase().indexOf(birthDateFilter) === -1) {
+                        display = false;
+                    }
+
+                    if (marriedFilter !== "" && marriedText.toLowerCase() !== marriedFilter) {
+                        display = false;
+                    }
+
+                    if (phoneFilter !== "" && phoneText.toUpperCase().indexOf(phoneFilter) === -1) {
+                        display = false;
+                    }
+
+                    if (salaryFilter !== "" && parseFloat(salaryText) < parseFloat(salaryFilter)) {
+                        display = false;
+                    }
+
+                    if (display) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function sortTable(n, direction) {
+            var table = document.getElementById("contactsTable");
+            var rows = table.rows;
+            var switching = true;
+            var switchCount = 0;
+
+            while (switching) {
+                switching = false;
+                var rowsArray = Array.from(rows).slice(1);
+                for (var i = 0; i < rowsArray.length - 1; i++) {
+                    var shouldSwitch = false;
+                    var x = rowsArray[i].getElementsByTagName("TD")[n];
+                    var y = rowsArray[i + 1].getElementsByTagName("TD")[n];
+
+                    if (n === 4) { 
+                        if (direction === "asc") {
+                            if (parseFloat(x.innerHTML) > parseFloat(y.innerHTML)) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (direction === "desc") {
+                            if (parseFloat(x.innerHTML) < parseFloat(y.innerHTML)) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else if (n === 3) { 
+                        if (direction === "asc") {
+                            if (x.innerHTML > y.innerHTML) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (direction === "desc") {
+                            if (x.innerHTML < y.innerHTML) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else { 
+                        if (direction === "asc") {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (direction === "desc") {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rowsArray[i].parentNode.insertBefore(rowsArray[i + 1], rowsArray[i]);
+                    switching = true;
+                    switchCount++;
+                } else {
+                    if (switchCount === 0 && direction === "asc") {
+                        direction = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+}

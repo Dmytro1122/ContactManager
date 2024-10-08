@@ -88,5 +88,22 @@ namespace ContactManager.Controllers
             await _contactService.DeleteContactAsync(id);
             return RedirectToAction("Index");
         }
+
+        public IActionResult Add()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Add(Contact contact)
+        {
+            if (ModelState.IsValid)
+            {
+                await _contactService.AddContactAsync(contact);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(contact);
+        }
     }
 }
