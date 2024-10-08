@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ContactManager.Models.Contact>
+
+<h2>Контактний менеджер</h2>
+
+<form asp-action="UploadCsv" enctype="multipart/form-data" method="post">
+    <input type="file" name="file" />
+    <input type="submit" value="Upload CSV" />
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ім'я</th>
+            <th>Дата народження</th>
+            <th>Одружений</th>
+            <th>Телефон</th>
+            <th>Зарплата</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in Model)
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.BirthDate.ToString("yyyy-MM-dd")</td>
+                <td>@contact.Married</td>
+                <td>@contact.Phone</td>
+                <td>@contact.Salary</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@contact.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@contact.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
